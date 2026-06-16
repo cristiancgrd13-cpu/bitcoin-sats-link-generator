@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Enlaces Bitcoin - Sats</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .converter { margin: 20px 0; }
+        button { padding: 10px 20px; }
+    </style>
+</head>
+<body>
+    <h1>Generador de Enlaces de Pago Bitcoin Lightning</h1>
+    <p>Convierte € a sats y genera enlaces de pago.</p>
+    
+    <div class="converter">
+        <label for="eur">Cantidad en EUR:</label>
+        <input type="number" id="eur" value="50" step="0.01">
+        <button onclick="convertAndGenerate()">Generar Enlace</button>
+    </div>
+    
+    <div id="result"></div>
+
+    <script>
+        async function getBtcPrice() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=eur');
+                const data = await res.json();
+                return data.bitcoin.eur;
+            } catch(e) {
+                return 60000; // fallback
+            }
+        }
+
+        async function convertAndGenerate() {
+            const eur = parseFloat(document.getElementById('eur').value);
+            if (!eur) return;
+            
+            const btcPrice = await getBtcPrice();
+            const satsPerEur = (100000000 / btcPrice); // 1 BTC = 100M sats
+            const sats = Math.round(eur * satsPerEur);
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h2>Resultado:</h2>
+                <p>${eur} € ≈ ${sats} sats</p>
+                <p>Precio BTC: ${btcPrice} €</p>
+                <div style="margin:20px 0;">
+                    <p>Enlace de pago ejemplo (Lightning):</p>
+                    <a href="lightning:YOUR_LN_ADDRESS?amount=${sats}">Pagar ${sats} sats</a>
+                    <!-- QR placeholder -->
+                </div>
+                <img id="coinImage" src="" alt="Moneda Bitcoin" style="max-width:200px;">
+            `;
+        }
+    </script>
+</body>
+</html>
